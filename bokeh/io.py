@@ -594,7 +594,7 @@ def _get_screenshot_as_png(obj):
         document.body.style.width = '100%';
         // add private window prop to check that render is complete
         window._bokeh_render_complete = false;
-        window.addEventListener("bokeh:rendered", function() {
+        window.addEventListener("bokeh:idle", function() {
             window._bokeh_render_complete = true;
         });
         """
@@ -607,7 +607,7 @@ def _get_screenshot_as_png(obj):
         WebDriverWait(driver, 5, poll_frequency=0.1).until(is_bokeh_render_complete)
     except TimeoutException:
         logger.warn("The webdriver raised a TimeoutException while waiting for \
-                     a 'bokeh:rendered' event to signify that the layout has rendered. \
+                     a 'bokeh:idle' event to signify that the layout has rendered. \
                      Something may have gone wrong.")
     finally:
         browser_logs = driver.get_log('browser')

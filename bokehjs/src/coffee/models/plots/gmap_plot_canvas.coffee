@@ -18,6 +18,7 @@ export class GMapPlotCanvasView extends PlotCanvasView
 
   initialize: (options) ->
     super(options)
+    @_tiles_loaded = false
     @zoom_count = 0
 
     mo = @model.plot.map_options
@@ -106,6 +107,7 @@ export class GMapPlotCanvasView extends PlotCanvasView
 
     # update bokeh ranges whenever the map idles, which should be after any UI action
     maps.event.addListenerOnce(@map, 'idle', @_set_bokeh_ranges)
+    maps.event.addListenerOnce(@map, 'tilesloaded', () => @_render_finished())
 
     # wire up listeners so that changes to properties are reflected
     @connect(@model.plot.properties.map_options.change, () => @_update_options())
@@ -115,6 +117,16 @@ export class GMapPlotCanvasView extends PlotCanvasView
     @connect(@model.plot.map_options.properties.zoom.change, () => @_update_zoom())
     @connect(@model.plot.map_options.properties.map_type.change, () => @_update_map_type())
     @connect(@model.plot.map_options.properties.scale_control.change, () => @_update_scale_control())
+
+  _render_finished: () ->
+    @_tiles_loaded = true
+    @notify_finished()
+
+  has_render_finished: () ->
+    if not super()
+      return false
+
+    return @_tiles_loaded
 
   _get_latlon_bounds: () =>
     bounds = @map.getBounds()
