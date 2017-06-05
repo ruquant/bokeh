@@ -17,8 +17,11 @@ load_google_api = (api_key) ->
 export class GMapPlotCanvasView extends PlotCanvasView
 
   initialize: (options) ->
+    @pause()
+
     super(options)
     @_tiles_loaded = false
+
     @zoom_count = 0
 
     mo = @model.plot.map_options
@@ -32,6 +35,8 @@ export class GMapPlotCanvasView extends PlotCanvasView
       if not window._bokeh_gmaps_callback?
         load_google_api(@model.plot.api_key)
       gmaps_ready.connect(() => @request_render())
+
+    @unpause()
 
   update_range: (range_info) ->
     # RESET -------------------------
@@ -48,13 +53,14 @@ export class GMapPlotCanvasView extends PlotCanvasView
 
     # ZOOM ---------------------------
     else if range_info.factor?
-      @pause()
 
       # The zoom count decreases the sensitivity of the zoom. (We could make this user configurable)
       if @zoom_count != 10
         @zoom_count += 1
         return
       @zoom_count = 0
+
+      @pause()
 
       super(range_info)
 
@@ -178,7 +184,7 @@ export class GMapPlotCanvasView extends PlotCanvasView
     @map.setOptions({zoom: @model.plot.map_options.zoom})
     @_set_bokeh_ranges()
 
-  # this method is expected and called by PlotView.render
+  # this method is expected and called by PlotCanvasView.render
   _map_hook: (ctx, frame_box) ->
     [left, top, width, height] = frame_box
     @canvas_view.map_el.style.top    = "#{top}px"
